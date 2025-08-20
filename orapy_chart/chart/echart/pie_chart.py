@@ -1,14 +1,13 @@
-
 from pyecharts.charts import Pie
 from pyecharts import options as opts
 from orapy_chart.chart.echart.base import Chart
 from pyecharts.render import make_snapshot
 from snapshot_selenium import snapshot
-from core.socket_instance import socketio
 import pandas as pd
 import base64
 import uuid
 import os
+import logging
 
 
 class PieChart(Chart):
@@ -80,12 +79,10 @@ class PieChart(Chart):
 
         pie.set_global_opts(**opts_dict)
 
-        # ✅ Nếu cần render ra file (cho render_base64 / render_png)
         if for_image and render_path:
             pie.render(render_path)
 
         return pie
-
 
     def render(self, threshold: float = 0.05, donut: bool = False,
                 group_other_name: str = "Others", show_label: bool = False):
@@ -97,10 +94,7 @@ class PieChart(Chart):
             return self.html
 
         except Exception as e:
-            socketio.emit('udp_message', {
-                'message': f"[PieChart Error] {str(e)}",
-                'type': 3
-            })
+            logging.error(f"[PieChart Error] {str(e)}")
             self.html = ""
             return self.html
 
@@ -127,7 +121,6 @@ class PieChart(Chart):
             return img_base64
         except Exception as e:
             raise RuntimeError(f"Lỗi render base64 (PieChart): {str(e)}")
-
 
     def render_png(self, output_path: str = None, image_name: str = 'chart.png',
                 threshold: float = 0.05, donut: bool = False,
