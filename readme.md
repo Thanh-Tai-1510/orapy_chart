@@ -1,116 +1,101 @@
-# OraePy Chart
-
-Chart utilities for Oracle AWR/ASH visualization using PyEcharts.
+# ora-chart
+Chart component uses in orapy
 
 ## Features
 
-- **Multiple Chart Types**: Bar, Line, and Pie charts
-- **Flexible Output**: HTML embed, PNG images, or Base64 encoded images
-- **Oracle Database Integration**: Designed for AWR/ASH data visualization
-- **Customizable**: Configurable chart options and styling
+- Line charts, bar charts, and pie charts
+- Support for large numbers with proper y-axis formatting
+- PNG, HTML, and base64 rendering
+- Customizable chart appearance and behavior
+
+## Y-Axis Formatting for Large Numbers
+
+The library now includes improved y-axis formatting to handle large numbers properly. When rendering charts with large values, the y-axis labels will have adequate spacing and larger chart dimensions to prevent truncation.
+
+### K/M/B Number Formatting
+
+For better readability of large numbers, the library automatically formats y-axis labels using:
+- **K** for thousands (e.g., 1,500 → 1.5K)
+- **M** for millions (e.g., 2,500,000 → 2.5M)  
+- **B** for billions (e.g., 2,500,000,000 → 2.5B)
+
+### Configuration Options
+
+You can customize y-axis formatting using the following ChartModel properties:
+
+- `y_axis_font_size`: Font size for y-axis labels (default: `10`)
+- `y_axis_margin`: Margin for y-axis labels (default: `8`)
+- `y_axis_format_large_numbers`: Enable K/M/B formatting (default: `True`)
+
+### Automatic Improvements for PNG Rendering
+
+When rendering to PNG, the library automatically:
+- Increases chart width to 1200px to accommodate large numbers
+- Sets minimum font size to 14px for better readability
+- Sets minimum margin to 25px to prevent label truncation
+- Disables animations for cleaner PNG output
+- Applies K/M/B formatting to y-axis labels (if enabled)
+
+### Example Usage
+
+```python
+from chart.models.chart_model import ChartModel, ChartSize
+
+chart_model = ChartModel(
+    id="my_chart",
+    type="line",
+    title="Chart with Large Numbers",
+    x_axis=["category"],
+    y_axis=["value"],
+    y_axis_font_size=14,           # Larger font
+    y_axis_margin=30,             # More margin
+    y_axis_format_large_numbers=True  # Enable K/M/B formatting
+    size=ChartSize(width=800, height=400)
+)
+
+# Disable K/M/B formatting
+chart_model_disabled = ChartModel(
+    id="example_disabled",
+    type="line",
+    title="Example Chart (No K/M/B)",
+    x_axis=["category"],
+    y_axis=["value"],
+    y_axis_format_large_numbers=False  # Disable K/M/B formatting
+)
+```
 
 ## Installation
 
 ```bash
-pip install orapy_chart
+pip install -e .
 ```
 
-## Dependencies
-
-- pandas >= 1.3.0
-- flask >= 2.0.0
-- pydantic >= 1.8.0
-- pyecharts >= 1.9.0
-- snapshot-selenium >= 1.0.0
-
-## Quick Start
+## Usage
 
 ```python
 import pandas as pd
-from orapy_chart import charts, ChartModel
+from chart.chart import Chart
+from chart.models.chart_model import ChartModel, ChartSize
 
-# Sample data
-data = pd.DataFrame({
-    'category': ['A', 'B', 'C', 'D'],
-    'value': [10, 25, 15, 30]
-})
+# Create your data
+data = {
+    'category': ['A', 'B', 'C'],
+    'value': [1000000, 2000000, 1500000]
+}
+df = pd.DataFrame(data)
 
 # Create chart model
 chart_model = ChartModel(
-    id="sample_chart",
-    type="bar",
-    title="Sample Chart",
-    x_axis=['category'],
-    y_axis=['value']
+    id="example",
+    type="line",
+    title="Example Chart",
+    x_axis=["category"],
+    y_axis=["value"]
 )
 
 # Create and render chart
-bar_chart = charts['BarChart'](chart_model, data)
-html_output = bar_chart.render()
+chart = Chart(chart_model, df)
+png_path = chart.render_png()  # Renders to PNG
+html = chart.render_html()      # Renders to HTML
+base64 = chart.render_base64()  # Renders to base64
 ```
-
-## Chart Types
-
-### Bar Chart
-```python
-bar_chart = charts['BarChart'](chart_model, data)
-html_output = bar_chart.render(horizontal=False, show_label=False)
-```
-
-### Line Chart
-```python
-line_chart = charts['LineChart'](chart_model, data)
-html_output = line_chart.render(horizontal=False)
-```
-
-### Pie Chart
-```python
-pie_chart = charts['PieChart'](chart_model, data)
-html_output = pie_chart.render(threshold=0.05, donut=False, show_label=False)
-```
-
-## Output Formats
-
-All chart types support multiple output formats:
-
-- **HTML Embed**: `chart.render()`
-- **PNG Image**: `chart.render_png(output_path='./images/', image_name='chart.png')`
-- **Base64 Image**: `chart.render_base64()`
-
-## Chart Configuration
-
-Use the `ChartModel` class to configure your charts:
-
-```python
-from orapy_chart.chart.chart_model import ChartModel, ChartSize
-
-chart_model = ChartModel(
-    id="my_chart",
-    type="bar",
-    title="My Chart Title",
-    x_axis=['column1'],
-    y_axis=['column2'],
-    x_label="X Axis Label",
-    y_label="Y Axis Label",
-    show_legend=True,
-    show_grid=False,
-    show_tooltip=True,
-    size=ChartSize(width=800, height=400)
-)
-```
-
-## License
-
-This project is licensed under the MIT License.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Author
-
-Thanh Tai - thanhtai.dev@gmail.com
-
-## Repository
-
-https://github.com/Thanh-Tai-1510/orapy_chart
